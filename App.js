@@ -10,10 +10,51 @@ import {
 } from 'react-native';
 const dgram = require('react-native-udp')
 const Buffer = require('buffer/').Buffer
+const socket = dgram.createSocket('udp4') //server imitation
 
-const socket = dgram.createSocket('udp4');
+// server events
+socket.on('error', (err) => {
+    console.log(`server error:\n${err.stack}`);
+    socket.close();
+  });
+
+socket.on('message', (msg, rinfo) => {
+    const message = Buffer.from(msg).toString()
+    console.log(`server got: ${message} from ${rinfo.address}:${rinfo.port}`);
+  });
+
+socket.on('listening', () => {
+    const address = socket.address();
+    console.log(`server listening ${address.address}:${address.port}`);
+  });
+
+socket.bind(43000);
+
+
+// client events
 const client = dgram.createSocket('udp4');
-var interval
+
+client.on('error', (err) => {
+  console.log(`client error:\n${err.stack}`);
+  client.close();
+});
+
+client.on('message', (msg, rinfo) => {
+  const message = Buffer.from(msg).toString()
+  console.log(`Client got: ${message} from ${rinfo.address}:${rinfo.port}`);
+});
+
+client.on('listening', () => {
+  const address = client.address();
+  console.log(`Client listening ${address.address}:${address.port}`);
+});
+
+client.bind(40000, () => {
+  console.log(client.address())
+});
+
+
+var interval //global interval variable
 
 export default class App extends Component{
 
@@ -23,58 +64,55 @@ export default class App extends Component{
     this.state = {
       sending_rate: '',
       packet_size: '',
-      sending: false,
-      id: 1
+      sending: false, //currently sending?
+      id: 1 //id of first packet
     }
 
   }
   
-  componentDidMount() {
-    socket.on('error', (err) => {
-      console.log(`client error:\n${err.stack}`);
-      sockert.close();
-    });
-
-    socket.on('message', (msg, rinfo) => {
-      const message = msg.toJSON()
-      console.log(`server got: ${message} from ${rinfo.address}:${rinfo.port}`);
-    });
-
-    socket.on('listening', () => {
-      const address = socket.address();
-      console.log(`server listening ${address.address}:${address.port}`);
-    });
-
-    socket.bind(20000, '127.0.0.1');
-  }
-
+  //function called when we press stop
   stopSending = async () => {
-    await this.setState({sending: false})
+    await this.setState({sending: false}) //set sending to false
     clearInterval(interval)
+    client.close()
   }
 
+  //function called when we want to start sending packets
   startSending = async () => {
     if (this.state.sending_rate != '' && this.state.packet_size != '') {
       const rate = parseInt(this.state.sending_rate)
       const size = parseInt(this.state.packet_size)
-      
+
       await this.setState({sending: true})
       interval = setInterval(() => {
         var date = new Date();
         var timestamp = date.getTime();
-        
+
         const obj = {
           timestamp: timestamp,
-          id: this.state.id
+          id: this.state.id,
+          garbage: ''
         }
 
+        var temp = JSON.stringify(obj)
+        var bytes_left = size - temp.length
+        var garbage = '0'.repeat(bytes_left)
+        obj.garbage = garbage
+
         const data = JSON.stringify(obj)
-        const message = Buffer.from(data)
-        client.send(message, 0, data.length, 20000, '127.0.0.1', (err) => {
-            this.setState(prevstate => (
+        const message = Buffer.from(data).toString('base64')
+
+        client.send(message, 0, message.length, 43000, '0.0.0.0', err => {
+          
+          if(err)
+            throw err
+          
+          console.log('Client sent ' + message.length + ' bytes');
+          this.setState(prevstate => (
               {id: prevstate.id + 1}
             ))
         })
+        
       }, rate);
     }
     else
