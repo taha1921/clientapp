@@ -74,7 +74,7 @@ export default class App extends Component{
   stopSending = async () => {
     await this.setState({sending: false}) //set sending to false
     clearInterval(interval)
-    client.close()
+    // client.close()
   }
 
   //function called when we want to start sending packets
@@ -102,7 +102,7 @@ export default class App extends Component{
         const data = JSON.stringify(obj)
         const message = Buffer.from(data).toString('base64')
 
-        client.send(message, 0, message.length, 43000, '0.0.0.0', err => {
+        client.send(message, 0, message.length, 46000, 'homeservertest.ddns.net', err => {
           
           if(err)
             throw err
@@ -154,7 +154,7 @@ export default class App extends Component{
           </View>
 
 
-          {/* Login Button */}
+          {/* Send/Stop Button */}
           <View style={{ marginTop: '5%', width: '100%', alignSelf: 'center' }}>
             <TouchableOpacity style={{
               marginHorizontal: Dimensions.get('window').width * 0.05,
@@ -172,9 +172,34 @@ export default class App extends Component{
                 :
                 this.stopSending()
               }}
-              // disabled={this.props.loading}
               >
                 <Text style={{ color: 'white', fontFamily: 'HelveticaNeue-Medium', fontSize: 20 }}>{this.state.sending ? 'Stop' : 'Start Sending'}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {
+            this.state.sending ? 
+            <View style={{marginTop: '20%', alignItems: 'center'}}>
+              <Text>{`Sending Packet ${this.state.id}`}</Text>
+            </View>
+            :
+            <View></View>
+          }
+          {/* Request File */}
+          <View style={{marginTop: '50%', width: '100%', alignSelf: 'center'}}>
+            <TouchableOpacity style={{
+              marginHorizontal: Dimensions.get('window').width * 0.05,
+              height: Dimensions.get('window').height * 0.06,
+              backgroundColor: 'red',
+              widht: '100%',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 6,
+            }}
+              activeOpacity={0.7}
+              
+            >
+              <Text style={{ color: 'white', fontFamily: 'HelveticaNeue-Medium', fontSize: 20 }}>Request File</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
