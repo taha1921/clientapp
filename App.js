@@ -1,34 +1,43 @@
 import React, { Component } from 'react';
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  Text,
-  TextInput,
-  Dimensions,
-  TouchableOpacity
-} from 'react-native';
+import { StyleSheet, View, ScrollView, Text, TextInput, Dimensions, TouchableOpacity } from 'react-native';
 const dgram = require('react-native-udp')
 const Buffer = require('buffer/').Buffer
-const socket = dgram.createSocket('udp4') //server imitation
+const RNFS = require('react-native-fs')
 
-// server events
-socket.on('error', (err) => {
-    console.log(`server error:\n${err.stack}`);
-    socket.close();
-  });
+var interval //global interval variable
+var test_number = 1;
 
-socket.on('message', (msg, rinfo) => {
-    const message = Buffer.from(msg).toString()
-    console.log(`server got: ${message} from ${rinfo.address}:${rinfo.port}`);
-  });
+// const socket = dgram.createSocket('udp4') //server imitation
+// // server events
+// socket.on('error', (err) => {
+//     console.log(`server error:\n${err.stack}`);
+//     socket.close();
+//   });
 
-socket.on('listening', () => {
-    const address = socket.address();
-    console.log(`server listening ${address.address}:${address.port}`);
-  });
+// socket.on('message', (msg, rinfo) => {
+//   // parse packet
+//   const message = Buffer.from(msg).toString()
+//   const packet = JSON.parse(message);
 
-socket.bind(43000);
+//   // calculate delay
+//   var date = new Date();
+//   var timestamp = Math.floor(date.getTime());
+//   var delay = timestamp - parseInt(packet.timestamp)
+
+//   // write output to file
+//   var toWrite = JSON.stringify({ 'id': packet.id, 'timestamp_Sent': packet.timestamp, 'timestamp_Recv': timestamp, 'delay': delay }) + "\n"
+//   RNFS.write(`${RNFS.ExternalDirectoryPath}/test_${test_number}.txt`, toWrite)
+//     .catch(err => {
+//       console.log(err.message);
+//     });
+//   });
+
+// socket.on('listening', () => {
+//     const address = socket.address();
+//     console.log(`server listening ${address.address}:${address.port}`);
+//   });
+
+// socket.bind(43000);
 
 
 // client events
@@ -40,13 +49,26 @@ client.on('error', (err) => {
 });
 
 client.on('message', (msg, rinfo) => {
+  // parse message
   const message = Buffer.from(msg).toString()
-  console.log(`Client got: ${message} from ${rinfo.address}:${rinfo.port}`);
+  const packet = JSON.parse(message);
+
+  // calculate delay
+  var date = new Date();
+  var timestamp = Math.floor(date.getTime());
+  var delay = timestamp - parseInt(packet.timestamp)
+
+  // write output to file
+  var toWrite = JSON.stringify({ 'id': packet.id, 'timestamp_Sent': packet.timestamp, 'timestamp_Recv': timestamp, 'delay': delay }) + "\n"
+  RNFS.write(`${RNFS.ExternalDirectoryPath}/test_${test_number}.txt`, toWrite)
+    .catch(err => {
+      console.log(err.message);
+    });
 });
 
 client.on('listening', () => {
   const address = client.address();
-  console.log(`Client listening ${address.address}:${address.port}`);
+  // console.log(`Client listening ${address.address}:${address.port}`);
 });
 
 client.bind(40000, () => {
@@ -54,7 +76,6 @@ client.bind(40000, () => {
 });
 
 
-var interval //global interval variable
 
 export default class App extends Component{
 
@@ -67,14 +88,16 @@ export default class App extends Component{
       sending: false, //currently sending?
       id: 1 //id of first packet
     }
-
   }
   
   //function called when we press stop
   stopSending = async () => {
-    await this.setState({sending: false}) //set sending to false
+    await this.setState({
+      sending: false,
+      id: 1
+    }) //set sending to false
     clearInterval(interval)
-    // client.close()
+    test_number += 1
   }
 
   //function called when we want to start sending packets
@@ -99,15 +122,18 @@ export default class App extends Component{
         var garbage = '0'.repeat(bytes_left)
         obj.garbage = garbage
 
+        date = new Date();
+        timestamp = date.getTime();
+        obj.timestamp = timestamp
+
         const data = JSON.stringify(obj)
         const message = Buffer.from(data).toString('base64')
 
-        client.send(message, 0, message.length, 46000, 'homeservertest.ddns.net', err => {
+        client.send(message, 0, message.length, 40000, '203.135.63.19', err => {
           
           if(err)
             throw err
           
-          console.log('Client sent ' + message.length + ' bytes');
           this.setState(prevstate => (
               {id: prevstate.id + 1}
             ))
