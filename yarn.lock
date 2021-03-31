@@ -835,11 +835,6 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
-"@react-native-community/async-storage@^1.6.3":
-  version "1.6.3"
-  resolved "https://registry.yarnpkg.com/@react-native-community/async-storage/-/async-storage-1.6.3.tgz#1a713e8c5cacd543ab8539080a5ce57ad917da88"
-  integrity sha512-67K2akX90uc252zKMYJt1wISvaEH6ARtdTI9bUkwmOFXVPyVk1DfPnaRmyUzcVdeCBOO1n0xv9YO2GSppIormQ==
-
 "@react-native-community/cli-platform-android@^2.9.0":
   version "2.9.0"
   resolved "https://registry.yarnpkg.com/@react-native-community/cli-platform-android/-/cli-platform-android-2.9.0.tgz#28831e61ce565a2c7d1905852fce1eecfd33cb5e"
@@ -6386,9 +6381,9 @@ xtend@~4.0.1:
   integrity sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==
 
 y18n@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.1.tgz#6d15fba884c08679c0d77e88e7759e811e07fa41"
-  integrity sha1-bRX7qITAhnnA136I53WegR4H+kE=
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.2.tgz#85c901bd6470ce71fc4bb723ad209b70f7f28696"
+  integrity sha512-uGZHXkHnhF0XeeAPgnKfPv1bgKAYyVvmNL1xlKsPYZPaIHxGti2hHqvOCQv71XMsLxu1QjergkqogUnms5D3YQ==
 
 "y18n@^3.2.1 || ^4.0.0", y18n@^4.0.0:
   version "4.0.0"
